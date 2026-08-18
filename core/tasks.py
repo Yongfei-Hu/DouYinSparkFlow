@@ -82,7 +82,25 @@ def scroll_and_select_user(page, username, targets):
 
     logger.debug(f"账号 {username} 等待私信会话列表加载")
     # [适配] 新版页面默认展示"全部"会话列表（含朋友私信），直接等待列表行渲染
-    page.wait_for_selector(target_selector)
+    try:
+        page.wait_for_selector(target_selector, timeout=config["browserTimeout"])
+    except Exception as e:
+        # [诊断] 页面未渲染会话列表时留证：截图 + URL + 标题 + 页面正文，便于排查登录/验证/布局
+        import os
+        os.makedirs("logs", exist_ok=True)
+        try:
+            page.screenshot(path="logs/failure.png")
+            logger.error(f"页面未显示会话列表，截图已保存到 logs/failure.png")
+        except Exception as se:
+            logger.error(f"截图失败: {se}")
+        try:
+            logger.error(f"当前页面 URL: {page.url}")
+            logger.error(f"页面标题: {page.title()}")
+            body_text = page.evaluate("() => document.body ? document.body.innerText.slice(0, 500) : 'NO BODY'")
+            logger.error(f"页面正文前500字: {body_text}")
+        except Exception as se:
+            logger.error(f"采集页面信息失败: {se}")
+        raise
 
     logger.debug(f"账号 {username} 进入好友列表页面，开始滚动查找目标好友")
 
