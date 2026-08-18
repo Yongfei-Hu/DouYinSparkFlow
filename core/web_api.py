@@ -57,6 +57,7 @@ class DouyinPmCliClient:
         verify_fp: str,
         fp: str,
         uifid: str,
+        cookies_header: str = "",
         jar_path: Optional[str | Path] = None,
         java_path: Optional[str | Path] = None,
         timeout_sec: int = 60,
@@ -68,6 +69,7 @@ class DouyinPmCliClient:
         self.verify_fp = verify_fp
         self.fp = fp
         self.uifid = uifid
+        self.cookies_header = cookies_header
         self.timeout_sec = timeout_sec
 
         self.java_path = Path(java_path) if java_path else self._auto_find_java()
@@ -134,6 +136,14 @@ class DouyinPmCliClient:
     @uifid.setter
     def uifid(self, value: str) -> None:
         self._uifid = self._must_non_empty("uifid", value)
+
+    @property
+    def cookies_header(self) -> str:
+        return self._cookies_header
+
+    @cookies_header.setter
+    def cookies_header(self, value: str) -> None:
+        self._cookies_header = (value or "").strip()
 
     # ---------- runtime fields ----------
     @property
@@ -260,11 +270,18 @@ class DouyinPmCliClient:
             key = k[2:] if k.startswith("--") else k
             cmd.extend([f"--{key}", vv])
 
+        # [2026-08-18 修复] jar 需要完整 cookie 串（DY_COOKIES）才能通过
+        # 服务端 session 校验（仅 sessionid 会报 "unexepcted session length"）
+        _env = dict(os.environ)
+        if self.cookies_header:
+            _env["DY_COOKIES"] = self.cookies_header
+
         p = subprocess.run(
             cmd,
             capture_output=True,
             text=False,
             timeout=timeout_sec or self.timeout_sec,
+            env=_env,
         )
 
         stdout = self._decode_bytes(p.stdout)

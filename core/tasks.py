@@ -56,6 +56,8 @@ def runTasks():
             verify_fp=cookies.get("s_v_web_id", "")
             fp=cookies.get("s_v_web_id", "")
             uifid=cookies.get("UIFID", "")
+            # [2026-08-18 修复] 完整 cookie 串：jar 需要 DY_COOKIES 环境变量
+            cookies_header = "; ".join(f"{k}={v}" for k, v in cookies.items() if v)
             
             if not client:
                 # 创建 DouyinPmCliClient 实例
@@ -66,6 +68,7 @@ def runTasks():
                     verify_fp=verify_fp,
                     fp=fp,
                     uifid=uifid,
+                    cookies_header=cookies_header,
                 )
             else:
                 # 更新 client 的 属性以切换账号
@@ -75,6 +78,7 @@ def runTasks():
                 client.verify_fp = verify_fp
                 client.fp = fp
                 client.uifid = uifid
+                client.cookies_header = cookies_header
             
             logger.info(f"开始处理账号 {username}")
             # 创建任务
