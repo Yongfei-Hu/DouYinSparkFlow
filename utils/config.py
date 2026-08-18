@@ -90,13 +90,10 @@ def parse_cookies_str(cookies_str):
             key, value = item.strip().split("=", 1)
             cookies[key] = value
 
-    # 校验cookie中必须有的值：ms_token s_v_web_id UIFID
-    required_keys = ["ms_token", "s_v_web_id", "UIFID"]
-    for key in required_keys:
-        if key not in cookies:
-            print(f"Cookie 中缺少必需的字段: {key}")
-            raise ValueError(f"Cookie 中缺少必需的字段: {key}")
-
+    # [2026-08-18 修复] 不再强制要求 ms_token/s_v_web_id/UIFID：
+    # 这些字段是浏览器 localStorage 里的扩展凭据，jar 发送消息不需要
+    # （服务端不校验，已实测验证），缺失时 tasks.py 以空串传给 jar。
+    # 真正的会话凭据是 sessionid（在 cookies 中，由 DY_COOKIES 完整传递）。
     return cookies
 
 
