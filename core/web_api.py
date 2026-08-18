@@ -111,7 +111,9 @@ class DouyinPmCliClient:
 
     @ms_token.setter
     def ms_token(self, value: str) -> None:
-        self._ms_token = self._must_non_empty("ms_token", value)
+        # [2026-08-18 修复] 可选字段：jar 发送消息不依赖 ms_token/verify_fp/fp/uifid
+        # （服务端不校验，已实测），缺失时传空串即可
+        self._ms_token = (value or "").strip()
 
     @property
     def verify_fp(self) -> str:
@@ -119,7 +121,9 @@ class DouyinPmCliClient:
 
     @verify_fp.setter
     def verify_fp(self, value: str) -> None:
-        self._verify_fp = self._must_non_empty("verify_fp", value)
+        # [2026-08-18 修复] 可选字段：jar 发送消息不依赖 ms_token/verify_fp/fp/uifid
+        # （服务端不校验，已实测），缺失时传空串即可
+        self._verify_fp = (value or "").strip()
 
     @property
     def fp(self) -> str:
@@ -127,7 +131,9 @@ class DouyinPmCliClient:
 
     @fp.setter
     def fp(self, value: str) -> None:
-        self._fp = self._must_non_empty("fp", value)
+        # [2026-08-18 修复] 可选字段：jar 发送消息不依赖 ms_token/verify_fp/fp/uifid
+        # （服务端不校验，已实测），缺失时传空串即可
+        self._fp = (value or "").strip()
 
     @property
     def uifid(self) -> str:
@@ -135,7 +141,9 @@ class DouyinPmCliClient:
 
     @uifid.setter
     def uifid(self, value: str) -> None:
-        self._uifid = self._must_non_empty("uifid", value)
+        # [2026-08-18 修复] 可选字段：jar 发送消息不依赖 ms_token/verify_fp/fp/uifid
+        # （服务端不校验，已实测），缺失时传空串即可
+        self._uifid = (value or "").strip()
 
     @property
     def cookies_header(self) -> str:
