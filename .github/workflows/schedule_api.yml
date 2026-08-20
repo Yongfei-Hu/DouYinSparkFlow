@@ -37,10 +37,6 @@ jobs:
         VARS_JSON: ${{ toJson(vars) }}
         SECRETS_JSON: ${{ toJson(secrets) }}
       run: python utils/export_github_env.py
-    - name: TLS fingerprint diagnostic (read-only, no message)
-      env:
-        DIAG_COOKIES: ${{ secrets.COOKIES_1596947932146541 }}
-      run: python diag_tls.py
     - name: Run DouYin Spark Flow
       run: python main.py
     - uses: actions/upload-artifact@v4
