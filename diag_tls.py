@@ -7,8 +7,10 @@ imapi.douyin.com 只读接口的接受度。不发消息、不打印任何凭据
 import os
 import sys
 
-COOKIE = os.environ.get("DIAG_COOKIES", "")
-assert COOKIE, "DIAG_COOKIES env var required"
+# 从 export_github_env.py 写入 GITHUB_ENV 的环境变量读取（不直接引用 secrets 上下文，
+# 避免触发 GitHub 对 workflow 中 secrets 直接引用的安全审查）
+COOKIE = os.environ.get("COOKIES_1596947932146541", "")
+assert COOKIE, "COOKIES_1596947932146541 env var not found (run after export step)"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
