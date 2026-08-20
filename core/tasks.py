@@ -3,7 +3,7 @@ from utils.logger import setup_logger
 from utils.config import get_config, get_userData
 import time
 import json
-from .web_api import DouyinPmCliClient
+from .web_api import DouyinPmCliClient, JarCallError
 from skills import execute_skill
 
 config = get_config()
@@ -28,7 +28,12 @@ def do_user_task(client, username, targets, skill_name, skill_config):
             logger.info(f"账号 {username} 的目标好友 {remark} 处理结果: {json.dumps(result, ensure_ascii=False)}")
             time.sleep(5)  # 等待5秒再处理下一个好友，避免请求过快
         except Exception as e:
-            logger.error(f"账号 {username} 的目标好友 {remark} 处理失败: {e}\n{traceback.format_exc()}")
+            # [2026-08-20 诊断] JarCallError 携带 jar 的 stderr（含 [DEBUG-RESP] 响应体信息），
+            # 失败时一并输出，避免调试信息丢失
+            stderr_extra = ""
+            if isinstance(e, JarCallError) and e.result and e.result.stderr:
+                stderr_extra = f"\njar stderr: {e.result.stderr.strip()}"
+            logger.error(f"账号 {username} 的目标好友 {remark} 处理失败: {e}{stderr_extra}\n{traceback.format_exc()}")
 
 def runTasks():
     try:
