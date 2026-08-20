@@ -5,6 +5,12 @@ if os.path.exists(".env"):
 
     load_dotenv(".env")
 
+# [2026-08-20 诊断] RUN_TLS_DIAG=1 时先跑只读 TLS 指纹对比（runner 上不发送任何消息）
+if os.getenv("RUN_TLS_DIAG") == "1":
+    from diag_tls import run_diag
+
+    run_diag()
+
 from core.tasks import runTasks
 
 runTasks()

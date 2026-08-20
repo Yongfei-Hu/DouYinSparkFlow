@@ -23,6 +23,33 @@ HEADERS = {
 URL = "https://imapi.douyin.com/v1/message/get_by_user_init"
 
 
+def run_diag() -> None:
+    report_requests()
+    report_curl_cffi()
+
+
+def report_requests():
+    # 1) python requests（默认 TLS 指纹，最不像浏览器）
+    try:
+        import requests
+        r = requests.get(URL, headers=HEADERS, timeout=20)
+        report("requests", r.status_code, r.content, r.headers)
+    except Exception as e:
+        print(f"[diag] requests: FAILED {type(e).__name__}: {e}")
+
+
+def report_curl_cffi():
+    # 2) curl_cffi 模拟 Chrome TLS + HTTP/2 指纹
+    try:
+        from curl_cffi import requests as creq
+        r = creq.get(URL, headers=HEADERS, timeout=20, impersonate="chrome")
+        report("curl_cffi_chrome", r.status_code, r.content, r.headers)
+    except ImportError:
+        print("[diag] curl_cffi not installed")
+    except Exception as e:
+        print(f"[diag] curl_cffi_chrome: FAILED {type(e).__name__}: {e}")
+
+
 def report(name, status, body, resp_headers):
     body_len = len(body) if body is not None else -1
     is_html = body is not None and body[:1] == b"<"
@@ -33,20 +60,5 @@ def report(name, status, body, resp_headers):
     return session_ok
 
 
-# 1) python requests（默认 TLS 指纹，最不像浏览器）
-try:
-    import requests
-    r = requests.get(URL, headers=HEADERS, timeout=20)
-    report("requests", r.status_code, r.content, r.headers)
-except Exception as e:
-    print(f"[diag] requests: FAILED {type(e).__name__}: {e}")
-
-# 2) curl_cffi 模拟 Chrome TLS + HTTP/2 指纹
-try:
-    from curl_cffi import requests as creq
-    r = creq.get(URL, headers=HEADERS, timeout=20, impersonate="chrome")
-    report("curl_cffi_chrome", r.status_code, r.content, r.headers)
-except ImportError:
-    print("[diag] curl_cffi not installed")
-except Exception as e:
-    print(f"[diag] curl_cffi_chrome: FAILED {type(e).__name__}: {e}")
+if __name__ == "__main__":
+    run_diag()
