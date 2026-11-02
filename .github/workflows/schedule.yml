@@ -1,8 +1,8 @@
 name: DouYin Spark Flow Schedule Run
 
 # 定时跑一轮任务，环境在 runner 上现搭（对应 Docker 的定时 cron 形态）。
-# 配置来自 Variables / Secrets（Environment: user-data），由 export_github_env.py
-# 经 toJson 注入进程环境 —— COOKIES_<抖音号> 键名跟着账号走，没法逐条写 env 映射。
+# 配置来自 Variables / Secrets（Environment: user-data）。
+# Cookie Secret 在下方逐项映射，新增账号时同步补充；不要导出整个 secrets 上下文。
 on:
   workflow_dispatch: # 允许手动触发
   schedule: # 定时任务
@@ -12,6 +12,9 @@ on:
 concurrency:
   group: douyin-spark-flow
   cancel-in-progress: false
+
+permissions:
+  contents: read
 
 env:
   # 与 Dockerfile 的 CLOAK_CHROMIUM_VERSION / CLOAK_BINARY_SHA256 一致，改要一起改
@@ -27,6 +30,8 @@ jobs:
     environment: user-data
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -96,10 +101,14 @@ jobs:
         "$HOME/cloakbrowser/chrome" --version
         echo "CLOAKBROWSER_BINARY_PATH=$HOME/cloakbrowser/chrome" >> "$GITHUB_ENV"
 
-    - name: Export Github Environment Variables and Secrets to JSON
+    - name: Export task configuration
       env:
         VARS_JSON: ${{ toJson(vars) }}
-        SECRETS_JSON: ${{ toJson(secrets) }}
+        SECRETS_JSON: >-
+          {
+            "COOKIES_1596947932146541": ${{ toJson(secrets.COOKIES_1596947932146541) }},
+            "COOKIES_33409491053": ${{ toJson(secrets.COOKIES_33409491053) }}
+          }
       run: python utils/export_github_env.py
 
     - name: Run DouYin Spark Flow
