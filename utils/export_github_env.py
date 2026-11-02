@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from http.cookies import CookieError, SimpleCookie
 
 
 def fail(message: str) -> None:
@@ -25,6 +26,37 @@ def as_env_string(value) -> str:
     if isinstance(value, str):
         return value
     return json.dumps(value, ensure_ascii=False)
+
+
+def as_config_value(key: str, value) -> str:
+    env_value = as_env_string(value)
+    if not key.upper().startswith("COOKIES_") or not env_value.strip():
+        return env_value
+
+    try:
+        json.loads(env_value)
+    except json.JSONDecodeError:
+        # Legacy API deployments stored a Cookie request header in this Secret.
+        cookies = SimpleCookie()
+        try:
+            cookies.load(env_value)
+        except CookieError:
+            fail(f"{key} must contain Cookie JSON or a Cookie request header")
+        if not cookies:
+            fail(f"{key} must contain Cookie JSON or a Cookie request header")
+        env_value = json.dumps(
+            [
+                {
+                    "name": name,
+                    "value": cookie.value,
+                    "domain": ".douyin.com",
+                    "path": "/",
+                }
+                for name, cookie in cookies.items()
+            ],
+            ensure_ascii=False,
+        )
+    return env_value
 
 
 def format_key_list(keys) -> str:
@@ -62,12 +94,12 @@ def main() -> None:
 
     with open(github_env, "a", encoding="utf-8") as env_file:
         for key, value in vars_map.items():
-            env_value = as_env_string(value)
+            env_value = as_config_value(str(key), value)
             append_github_env_block(env_file, str(key), env_value)
             dotenv_map[str(key)] = env_value
 
         for key, value in secrets_map.items():
-            env_value = as_env_string(value)
+            env_value = as_config_value(str(key), value)
             append_github_env_block(env_file, str(key), env_value)
             dotenv_map[str(key)] = env_value
 

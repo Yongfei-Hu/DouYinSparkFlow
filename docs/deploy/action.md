@@ -41,6 +41,7 @@ Action 每次运行的 runner 不同，出口 IP 每次都变。抖音登录态�
 
 - `TASKS` 使用当前格式：账号字段为 `unique_id`，`targets` 为好友备注、昵称或 ID 的字符串数组。旧 API 版本的 `user_id` 和好友对象需要迁移。
 - `.github/workflows/schedule.yml` 只逐项引用运行所需的 Cookie Secret。新增账号时，在 `Export task configuration` 步骤的 `SECRETS_JSON` 中添加对应的 `COOKIES_<unique_id>` 映射。
+- 旧 API 部署保存在 Secret 中的 `name=value; name2=value2` Cookie 请求头，会在导出时转换为当前浏览器使用的 Cookie JSON 数组。已有 JSON 格式保持原样，Secret 本身无需重填。
 - 不要整包序列化 `secrets` 上下文，否则会把 `GITHUB_TOKEN` 和无关凭据一起传给后续步骤。GitHub 可能拦截这种工作流，显示 `action_required`。
 - 修改工作流后，旧运行仍使用旧提交。确认新运行的状态，避免批准旧工作流后补跑积压任务。
 

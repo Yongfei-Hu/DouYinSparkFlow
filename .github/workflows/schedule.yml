@@ -106,8 +106,7 @@ jobs:
         VARS_JSON: ${{ toJson(vars) }}
         SECRETS_JSON: >-
           {
-            "COOKIES_1596947932146541": ${{ toJson(secrets.COOKIES_1596947932146541) }},
-            "COOKIES_33409491053": ${{ toJson(secrets.COOKIES_33409491053) }}
+            "COOKIES_1596947932146541": ${{ toJson(secrets.COOKIES_1596947932146541) }}
           }
       run: python utils/export_github_env.py
 
