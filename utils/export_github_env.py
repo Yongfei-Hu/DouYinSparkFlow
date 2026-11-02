@@ -56,6 +56,9 @@ def as_config_value(key: str, value) -> str:
             ],
             ensure_ascii=False,
         )
+    # Derived JSON differs from the original Secret and needs its own log mask.
+    masked_value = env_value.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    print(f"::add-mask::{masked_value}", flush=True)
     return env_value
 
 
